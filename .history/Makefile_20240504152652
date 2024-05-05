@@ -1,0 +1,3 @@
+ASM nasm
+
+$(ASM) src/main.asm -f bin build/main.bin
