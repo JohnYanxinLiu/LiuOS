@@ -18,6 +18,7 @@ puts:
 
 .loop:
     lodsb           ; loads next char into al    
+    
     ; Takes char from al to write
     mov ah, 0x0e    ; Call bios INT
     mov bh, 0       ; Sets page number to 0
@@ -43,7 +44,7 @@ main:
     mov ss, ax      ; Sets stack segment to 0
     mov sp, 0x7C00  ; Sets stack pointer to beginning of this file.
 
-
+    ; calls hello_world
     mov si, str_hello
     call puts
 
