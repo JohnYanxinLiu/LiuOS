@@ -36,7 +36,7 @@ ebr_windows_nt_flags:       db 0
 ebr_signature:              db 0x29
 ebr_volume_id:              dd 0xFBF70E5E
 ebr_volume_label:           db 'hummus     '    ; 11 Bytes
-ebr_sys_id_str:             db 'FAT12  '        ; 8 Bytes
+ebr_sys_id_str:             db 'FAT12   '       ; 8 Bytes
 
 ;
 ; Boot code
@@ -58,16 +58,18 @@ puts:
 .loop:
     lodsb           ; loads next char into al    
     
+    or al, al       ; checks if al register is null
+    jz .done       ; jumps if al is not 0
+
     ; Takes char from al to write
     mov ah, 0x0e    ; Call bios INT
     mov bh, 0       ; Sets page number to 0
     int 0x10
 
-    or al, al       ; checks if al register is null
-    jnz .loop       ; jumps if al is not 0
+    jmp .loop
     ; Ignore BL foreground pixel (only for graphics mode)
 
-done:
+.done:
     pop ax
     pop si
     ret
@@ -94,7 +96,8 @@ main:
     ; calls hello_world
     mov si, msg_hello
     call puts
-
+    
+    cli
     hlt
 
 
