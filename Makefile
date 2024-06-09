@@ -2,7 +2,7 @@ SRC_DIR=src
 BUILD_DIR=build
 
 
-ASM=i686-liuos-as
+AS=i686-liuos-as
 CC=i686-liuos-gcc
 AR=i686-liuos-ar
 
@@ -34,7 +34,8 @@ all: $(OS_IMG) $(LIBC_A)
 
 
 $(LIBC_A): $(LIBC_OBJS)
-	$(AR) rcs $(LIBC_A) $(LIBC_OBJS)
+	$(AS) $(SRC_DIR)/constructors/crt0.s -o $(BUILD_DIR)/crt0.o
+	$(AR) rcs $(LIBC_A) $(LIBC_OBJS) $(BUILD_DIR)/crt0.o
 
 # Rule to compile each source file into object files
 $(BUILD_DIR)/libc/%.o: $(SRC_DIR)/$(LIBC_DIR)/%.c
@@ -44,7 +45,7 @@ $(BUILD_DIR)/libc/%.o: $(SRC_DIR)/$(LIBC_DIR)/%.c
 
 BOOT_OBJ=$(BUILD_DIR)/boot.o
 $(BOOT_OBJ): $(SRC_DIR)/boot/boot.s
-	$(ASM) $(SRC_DIR)/boot/boot.s -o $(BUILD_DIR)/boot.o
+	$(AS) $(SRC_DIR)/boot/boot.s -o $(BUILD_DIR)/boot.o
 
 KERNEL_OBJ=$(BUILD_DIR)/liuos.bin
 $(KERNEL_OBJ):  $(BOOT_OBJ) $(SRC_DIR)/kernel/kernel.c
