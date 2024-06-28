@@ -1,5 +1,6 @@
 ASM=nasm
 CC=gcc
+CC_FLAGS=-m32 -fno-stack-protector -fno-builtin -c
 LD=ld
 
 SRC_DIR=src
@@ -10,26 +11,31 @@ QEMU=qemu-system-i386
 
 OS_IMG=$(BUILD_DIR)/LiuOS.iso
 
-KERNEL_OBJ=$(BUILD_DIR)/kernel.o
-VGA_OBJ=$(BUILD_DIR)/vga.o
-BOOT_OBJ=$(BUILD_DIR)/boot.o
+KERNEL_OBJ=kernel.o
+VGA_OBJ=vga.o
+GDT_OBJ=gdt.o
+
+GDTS_OBJ=gdts.o
+BOOT_OBJ=boot.o
 
 all: clean $(OS_IMG)
 
-$(OS_IMG): $(KERNEL_OBJ) $(VGA_OBJ) $(BOOT_OBJ)
+OBJ_LIST= $(BUILD_DIR)/$(BOOT_OBJ) $(BUILD_DIR)/$(KERNEL_OBJ) $(BUILD_DIR)/$(VGA_OBJ) $(BUILD_DIR)/$(GDT_OBJ) $(BUILD_DIR)/$(GDTS_OBJ) 
+
+$(OS_IMG): kernel_objs boot_objs
 	rm -rf $(BUILD_DIR)/$(GRUB_FILES_DIR)
 	cp -r $(SRC_DIR)/$(GRUB_FILES_DIR) $(BUILD_DIR)
-	$(LD) -m elf_i386 -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/$(GRUB_FILES_DIR)/boot/kernel $(BOOT_OBJ) $(KERNEL_OBJ) $(VGA_OBJ)
+	$(LD) -m elf_i386 -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/$(GRUB_FILES_DIR)/boot/kernel $(OBJ_LIST)
 	grub-mkrescue -o $(OS_IMG) $(BUILD_DIR)/$(GRUB_FILES_DIR)
 
-$(KERNEL_OBJ): $(SRC_DIR)/kernel.c
-	$(CC) -m32 -fno-stack-protector -fno-builtin -c $(SRC_DIR)/kernel.c -o $(KERNEL_OBJ)
+kernel_objs: $(SRC_DIR)/kernel.c $(SRC_DIR)/vga.c $(SRC_DIR)/gdt.c
+	$(CC) $(CC_FLAGS) $(SRC_DIR)/kernel.c -o $(BUILD_DIR)/$(KERNEL_OBJ)
+	$(CC) $(CC_FLAGS) $(SRC_DIR)/vga.c -o $(BUILD_DIR)/$(VGA_OBJ)
+	$(CC) $(CC_FLAGS) $(SRC_DIR)/gdt.c -o $(BUILD_DIR)/$(GDT_OBJ)
 
-$(VGA_OBJ): $(SRC_DIR)/vga.c
-	$(CC) -m32 -fno-stack-protector -fno-builtin -c $(SRC_DIR)/vga.c -o $(VGA_OBJ)
-
-$(BOOT_OBJ): $(SRC_DIR)/boot.s
-	$(ASM) -f elf32 $(SRC_DIR)/boot.s -o $(BOOT_OBJ)
+boot_objs: $(SRC_DIR)/boot.s $(SRC_DIR)/gdt.s
+	$(ASM) -f elf32 $(SRC_DIR)/boot.s -o $(BUILD_DIR)/$(BOOT_OBJ)
+	$(ASM) -f elf32 $(SRC_DIR)/gdt.s -o $(BUILD_DIR)/$(GDTS_OBJ)
 
 clean:
 	rm -rf $(BUILD_DIR)/*
