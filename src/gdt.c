@@ -2,7 +2,7 @@
 
 
 
-extern void gdt_flush(addr_t);
+extern void gdt_flush(uint32_t);
 
 #define NUM_ENTRIES 5
 
@@ -13,7 +13,7 @@ struct gdt_ptr gdt;
 void init_gdt()
 {
     gdt.limit = (sizeof(gdt_entry) * NUM_ENTRIES) - 1;
-    gdt.base = &gdt_entries;
+    gdt.base = (uint32_t)&gdt_entries;
 
     set_gdt_gate(0, 0, 0, 0, 0); // NULL Segment
     set_gdt_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xC); // Kernel Code Segment
@@ -21,7 +21,7 @@ void init_gdt()
     set_gdt_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xC); // User Code Segment
     set_gdt_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xC); // User Data Segment
 
-    gdt_flush(&gdt);
+    gdt_flush((uint32_t)&gdt);
 }
 
 
