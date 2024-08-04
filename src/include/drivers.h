@@ -2,11 +2,11 @@
 
 // Common inline functions found here https://wiki.osdev.org/Inline_Assembly/Examples#I/O_access
 
-static inline void outb(uint16_t port, uint8_t value);
+void outb(uint16_t port, uint8_t value);
 
-static inline uint8_t inb(uint16_t port);
+uint8_t inb(uint16_t port);
 
-static inline void io_wait(void);
+void io_wait(void);
 
 
 // PIC macros https://wiki.osdev.org/8259_PIC
@@ -35,3 +35,5 @@ static inline void io_wait(void);
 void PIC_init(int offset1, int offset2);
 
 void pic_disable(void);
+
+
