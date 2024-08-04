@@ -1,6 +1,7 @@
-#include "include/stdint.h"
+#include "libc/include/stdint.h"
 #include "include/vga.h"
 #include "include/gdt.h"
+#include "include/idt.h"
 
 
 void kmain(void);
@@ -8,5 +9,6 @@ void kmain(void);
 void kmain()
 {
     init_gdt();
-    print("init_gdt finished!\r\n");
+    init_idt();
+    print("init_gdt and idt finished!\r\n");
 }

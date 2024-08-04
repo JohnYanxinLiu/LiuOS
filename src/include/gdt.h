@@ -1,33 +1,5 @@
 
-#include "stdint.h"
-
-
-//Offsets for descriptor fields in segment descriptor
-#define SEGMENT_UPPER_BASE_OFFSET 56
-#define SEGMENT_FLAGS_OFFSET 52
-#define SEGMENT_UPPER_LIMIT_OFFSET 48
-#define SEGMENT_ACCESS_BYTE_OFFSET 40
-#define SEGMENT_MID_BASE_OFFSET 32
-#define SEGMENT_LOW_BASE_OFFSET 16
-#define SEGMENT_LOW_LIMIT_OFFSET 0
-
-
-//Offsets for the bit position that larger fields are broken up by 
-#define UPPER_BASE_BIT_POS 24
-#define MID_BASE_BIT_POS 16
-#define LOW_BASE_BIT_POS 0
-#define UPPER_LIMIT_BIT_POS 16
-#define LOW_LIMIT_BIT_POS 0
-
-
-//Bit masks for fields
-#define UPPER_BASE_MASK 0xFF
-#define FLAGS_MASK 0xF
-#define UPPER_LIMIT_MASK 0xF
-#define ACCESS_BYTE_MASK 0xFF
-#define MID_BASE_MASK 0xF
-#define LOW_BASE_MASK 0xFFFF
-#define LOW_LIMIT_MASK 0xFFFF
+#include "../libc/include/stdint.h"
 
 
 //Access Byte Masks
@@ -46,23 +18,63 @@
 #define LONG_MODE_MASK      1 << 1 // If 1, it defines a 64-bit code segment. For any other type of segment, it should be 0.
 
 
-typedef uint64_t gdt_entry;
+typedef struct gdt_entry{
+    uint16_t limit_lo;
+    uint16_t base_lo;
+    uint8_t base_mid;
+    uint8_t access_byte;
+    uint8_t flags_limit_hi;
+    uint8_t base_hi;
+}__attribute__((packed)) gdt_entry;
 
-struct gdt_ptr{
+
+typedef struct gdt_ptr{
     uint16_t limit;
     unsigned int base;
-}__attribute__((packed));
+}__attribute__((packed)) gdt_ptr;
+
+
+typedef struct tss_entry{
+    uint32_t LINK;
+    uint32_t esp0;
+    uint32_t ss0;
+    uint32_t esp1;
+    uint32_t ss1;
+    uint32_t esp2;
+    uint32_t ss2;
+    uint32_t cr3;
+    uint32_t eip;
+    uint32_t eflags;
+    uint32_t eax;
+    uint32_t ecx;
+    uint32_t edx;
+    uint32_t ebx;
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t esi;
+    uint32_t edi;
+    uint16_t es;
+    uint16_t reserved_0;
+    uint16_t cs;
+    uint16_t reserved_1;
+    uint16_t ss;
+    uint16_t reserved_2;
+    uint16_t ds;
+    uint16_t reserved_3;
+    uint32_t fs;
+    uint16_t reserved_4;
+    uint32_t gs;
+    uint16_t reserved_5;
+    uint32_t ldtr;
+    uint16_t reserved_6;
+    uint16_t reserved_7;
+    uint16_t iopb;
+    uint32_t ssp;
+}__attribute__((packed)) tss_entry;
 
 void init_gdt();
 
-void set_gdt_gate
-(
-    uint32_t num, 
-    uint32_t base, 
-    uint32_t limit,
-    uint8_t access,
-    uint8_t gran
-);
+void set_gdt_gate(uint32_t num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran);
 
-
+void write_tss(uint32_t num, uint16_t ss0, uint32_t esp0);
 
