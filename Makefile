@@ -11,7 +11,7 @@ SRCS_S := $(shell find $(SRC_DIR) -type f -name "*.s")
 # Define object files corresponding to the source files
 # Replace 'src' with 'build' in the paths
 OBJS_C := $(SRCS_C:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
-OBJS_S := $(SRCS_S:$(SRC_DIR)/%.s=$(BUILD_DIR)/%.o)
+OBJS_S := $(SRCS_S:$(SRC_DIR)/%.s=$(BUILD_DIR)/%s.o)
 
 # Combine object files list
 OBJS := $(OBJS_C) $(OBJS_S)
@@ -29,7 +29,7 @@ OS_IMG=$(BUILD_DIR)/LiuOS.iso
 QEMU=qemu-system-i386
 
 # Define the default target
-all: $(BUILD_DIR) $(OBJS) $(OS_IMG)
+all: $(BUILD_DIR) $(OBJS_C) $(OBJS_S) $(OS_IMG)
 
 # Create the build directory and subdirectories as needed
 $(BUILD_DIR):
@@ -39,25 +39,41 @@ $(BUILD_DIR):
 $(BUILD_DIR)/%/:
 	mkdir -p $(BUILD_DIR)/$(dir $*)
 
+# Rule to assemble .S files into .o files
+$(BUILD_DIR)/%s.o: $(SRC_DIR)/%.s
+	@mkdir -p $(dir $@)
+	$(AS) $(ASFLAGS) $< -o $@
+
 # Rule to compile .c files into .o files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $< -o $@
 
-# Rule to assemble .S files into .o files
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
-	@mkdir -p $(dir $@)
-	$(AS) $(ASFLAGS) $< -o $@
 
 $(OS_IMG): $(BUILD_DIR) $(OBJS)
-	echo $(OBJS)
+	
 	cp -r $(SRC_DIR)/$(GRUB_FILES_DIR) $(BUILD_DIR)
 	$(LD) -m elf_i386 -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/$(GRUB_FILES_DIR)/boot/kernel $(OBJS)
 	grub-mkrescue -o $(OS_IMG) $(BUILD_DIR)/$(GRUB_FILES_DIR)
 
+echo:
+	echo $(SRCS_C)
+	echo $(SRCS_S)
+	echo $(OBJS)
+
 # Clean up build directory
 clean:
 	rm -rf $(BUILD_DIR)
+
+run:
+	$(QEMU) $(OS_IMG)
+
+debug: CFLAGS := $(CFLAGS) $(DEBUG_FLAGS)
+debug: all
+
+run_debug:
+	$(QEMU) -s -S $(OS_IMG)
+
 
 .PHONY: all clean
 
@@ -106,12 +122,3 @@ clean:
 # clean:
 # 	rm -rf $(BUILD_DIR)/*
 
-# run:
-# 	$(QEMU) $(OS_IMG)
-
-
-# debug: CC_FLAGS += $(DEBUG_FLAGS)
-# debug: all
-
-# run_debug:
-# 	$(QEMU) -s -S $(OS_IMG)
