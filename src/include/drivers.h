@@ -1,3 +1,7 @@
+
+#ifndef DRIVERS_H
+#define DRIVERS_H
+
 #include "../libc/include/stdint.h"
 
 // Common inline functions found here https://wiki.osdev.org/Inline_Assembly/Examples#I/O_access
@@ -37,3 +41,5 @@ void PIC_init(int offset1, int offset2);
 void pic_disable(void);
 
 
+
+#endif //DRIVERS_H

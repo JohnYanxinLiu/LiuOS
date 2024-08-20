@@ -1,3 +1,7 @@
+
+#ifndef IDT_H
+#define IDT_H
+
 #include "../libc/include/stdint.h"
 
 #define TASK_GATE 0x5;
@@ -43,6 +47,10 @@ typedef struct interrupt_registers{
 } interrupt_registers;
 
 void isr_handler(interrupt_registers* regs);
+
+void irq_install_handler (int irq, void (*handler) (interrupt_registers *r));
+
+void irq_uninstall_handler(int irq);
 
 extern void isr_0  ();
 extern void isr_1  ();
@@ -96,3 +104,5 @@ extern void irq_15 ();
 
 extern void isr_128();
 extern void isr_177();
+
+#endif //IDT_H
